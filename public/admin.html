@@ -93,3 +93,66 @@
 
     <div id="msg"></div>
   </div>
+  
+  <script>
+    let isLogin = true;
+
+    const formTitle = document.getElementById('formTitle');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const toggleText = document.getElementById('toggleText');
+    const toggleLink = document.getElementById('toggleLink');
+    const msg = document.getElementById('msg');
+
+    toggleLink.addEventListener('click', () => {
+      isLogin = !isLogin;
+      if (isLogin) {
+        formTitle.textContent = 'Admin Login';
+        btnSubmit.textContent = 'Login';
+        toggleText.textContent = 'Belum punya akun admin? ';
+        toggleLink.textContent = 'Register';
+      } else {
+        formTitle.textContent = 'Admin Register';
+        btnSubmit.textContent = 'Register';
+        toggleText.textContent = 'Sudah punya akun admin? ';
+        toggleLink.textContent = 'Login';
+      }
+      msg.textContent = '';
+    });
+
+    btnSubmit.addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      if (!email || !password) {
+        msg.textContent = 'Email dan password wajib diisi.';
+        msg.style.color = 'red';
+        return;
+      }
+
+      try {
+        const endpoint = isLogin ? '/admin/login' : '/admin/register';
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Terjadi kesalahan');
+        }
+
+        msg.textContent = data.message || (isLogin ? 'Login berhasil' : 'Register berhasil');
+        msg.style.color = 'green';
+
+        if (isLogin && data.redirect) {
+          // pindah ke dashboard admin
+          window.location.href = data.redirect;
+        }
+      } catch (err) {
+        msg.textContent = err.message;
+        msg.style.color = 'red';
+      }
+    });
+  </script>
+</body>
+</html>
