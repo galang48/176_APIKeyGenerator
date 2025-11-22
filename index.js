@@ -28,7 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // session untuk admin
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'dev-secret-166-apikey',
+    secret: process.env.SESSION_SECRET || 'dev-secret-176-apikey',
     resave: false,
     saveUninitialized: false
   })
@@ -318,7 +318,6 @@ app.get('/admin/dashboard', isAuthenticated, async (req, res) => {
       'SELECT id, api_key, user_id, is_active, created_at, last_used_at, out_of_date FROM api_key ORDER BY id DESC'
     );
 
-    // bikin HTML sederhana
     let userRows = '';
     for (const u of users) {
       userRows += `
@@ -338,15 +337,15 @@ app.get('/admin/dashboard', isAuthenticated, async (req, res) => {
       keyRows += `
         <tr>
           <td>${k.id}</td>
-          <td>${k.api_key}</td>
+          <td class="apikey-cell">${k.api_key}</td>
           <td>${k.user_id || '-'}</td>
           <td>${k.is_active ? '1' : '0'}</td>
           <td>${k.created_at || '-'}</td>
           <td>${k.last_used_at || '-'}</td>
           <td>${k.out_of_date || '-'}</td>
-          <td class="${statusClass}">${status}</td>
+          <td><span class="status-pill ${statusClass}">${status}</span></td>
           <td>
-            <button type="button" onclick="deleteApiKey(${k.id})">
+            <button type="button" class="btn btn-delete" onclick="deleteApiKey(${k.id})">
               Delete
             </button>
           </td>
@@ -360,104 +359,328 @@ app.get('/admin/dashboard', isAuthenticated, async (req, res) => {
         <meta charset="UTF-8" />
         <title>Admin Dashboard - API Key</title>
         <style>
+          * {
+            box-sizing: border-box;
+          }
+
           body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             margin: 0;
             padding: 0;
+            background:
+              radial-gradient(circle at top, #5a0008, transparent 60%),
+              radial-gradient(circle at bottom, #1a0004, transparent 60%),
+              #060002;
+            color: #fce4ec;
           }
+
+          .page-shell {
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 24px 12px;
+          }
+
           .wrapper {
-            max-width: 1100px;
-            margin: 20px auto;
-            background: #ffffff;
-            border-radius: 10px;
-            padding: 20px 30px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          }
-          h1, h2 {
-            margin-top: 0;
-          }
-          table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
+            max-width: 1150px;
+            background:
+              radial-gradient(circle at top left, rgba(255, 82, 82, 0.22), transparent 55%),
+              radial-gradient(circle at bottom right, rgba(255, 214, 0, 0.2), transparent 55%),
+              #220008;
+            border-radius: 20px;
+            padding: 22px 26px 26px;
+            box-shadow:
+              0 16px 40px rgba(0, 0, 0, 0.95),
+              0 0 30px rgba(255, 82, 82, 0.7);
+            border: 1px solid #b71c1c;
+            position: relative;
+            overflow: hidden;
           }
-          th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+
+          .wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -8%;
+            width: 116%;
+            height: 30px;
+            background-image: repeating-linear-gradient(
+              90deg,
+              #ffeb3b 0 18px,
+              #f44336 18px 36px
+            );
+            box-shadow: 0 4px 12px rgba(0,0,0,0.9);
           }
-          th {
-            background-color: #f0f0f0;
+
+          .wrapper-inner {
+            position: relative;
+            z-index: 1;
           }
-          .status-online {
-            color: green;
-            font-weight: bold;
-          }
-          .status-offline {
-            color: red;
-            font-weight: bold;
-          }
+
           .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            margin-top: 18px;
           }
-          button {
-            padding: 6px 12px;
-            border-radius: 6px;
+
+          h1 {
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #ff5252;
+            text-shadow:
+              0 0 6px rgba(255, 82, 82, 0.9),
+              0 0 16px rgba(255, 214, 0, 0.8);
+          }
+
+          .tagline {
+            margin: 2px 0 0;
+            font-size: 12px;
+            color: #ffe082;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            text-shadow: 0 0 6px rgba(0,0,0,0.9);
+          }
+
+          .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+          }
+
+          .btn {
             border: none;
             cursor: pointer;
-            background-color: #ff4081;
+            font-family: inherit;
+          }
+
+          .btn-logout {
+            padding: 8px 16px;
+            border-radius: 999px;
+            background-image: linear-gradient(90deg, #f50057, #ffca28);
+            background-size: 200% 200%;
+            color: #1a0004;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            box-shadow:
+              0 6px 14px rgba(0,0,0,0.95),
+              0 0 14px rgba(255, 64, 129, 0.9);
+            transition: background-position 0.25s ease, transform 0.12s ease, box-shadow 0.12s ease;
+          }
+
+          .btn-logout:hover {
+            background-position: 100% 0;
+            transform: translateY(-1px);
+            box-shadow:
+              0 8px 16px rgba(0,0,0,1),
+              0 0 18px rgba(255, 128, 171, 1);
+          }
+
+          .btn-logout:active {
+            transform: translateY(1px) scale(0.98);
+          }
+
+          h2 {
+            margin-top: 20px;
+            margin-bottom: 8px;
+            font-size: 18px;
+            color: #ffeb3b;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            text-shadow: 0 0 6px rgba(0,0,0,0.9);
+          }
+
+          .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ff5252, transparent);
+            margin-bottom: 8px;
+            opacity: 0.8;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            background-color: rgba(6,0,2,0.9);
+            border-radius: 12px;
+            overflow: hidden;
+          }
+
+          thead {
+            background: linear-gradient(90deg, #b71c1c, #880e4f);
+          }
+
+          th, td {
+            border: 1px solid #4e0a12;
+            padding: 8px 10px;
+            text-align: left;
+          }
+
+          th {
+            color: #ffebee;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-size: 11px;
+            white-space: nowrap;
+          }
+
+          tbody tr:nth-child(even) {
+            background-color: rgba(24,0,6,0.95);
+          }
+
+          tbody tr:nth-child(odd) {
+            background-color: rgba(18,0,4,0.95);
+          }
+
+          tbody tr:hover {
+            background-color: rgba(74,20,40,0.9);
+          }
+
+          td {
+            color: #ffebee;
+            vertical-align: top;
+          }
+
+          .apikey-cell {
+            font-family: "Fira Code", "JetBrains Mono", monospace;
+            font-size: 12px;
+            word-break: break-all;
+          }
+
+          .status-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+          }
+
+          .status-online {
+            background-color: rgba(46, 125, 50, 0.2);
+            color: #b9f6ca;
+            border: 1px solid #2e7d32;
+            box-shadow: 0 0 8px rgba(56,142,60,0.9);
+          }
+
+          .status-offline {
+            background-color: rgba(183, 28, 28, 0.3);
+            color: #ff8a80;
+            border: 1px solid #d32f2f;
+            box-shadow: 0 0 8px rgba(211,47,47,0.9);
+          }
+
+          .btn-delete {
+            padding: 6px 12px;
+            border-radius: 999px;
+            background-image: linear-gradient(90deg, #f50057, #ff7043);
             color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            box-shadow:
+              0 4px 10px rgba(0,0,0,0.9),
+              0 0 10px rgba(244,81,108,0.9);
+            transition: transform 0.12s ease, box-shadow 0.12s ease, background-position 0.25s ease;
+          }
+
+          .btn-delete:hover {
+            transform: translateY(-1px);
+            box-shadow:
+              0 6px 12px rgba(0,0,0,1),
+              0 0 12px rgba(255,138,128,1);
+          }
+
+          .btn-delete:active {
+            transform: translateY(1px) scale(0.97);
+          }
+
+          .empty-row {
+            text-align: center;
+            color: #ffcdd2;
+          }
+
+          @media (max-width: 900px) {
+            .wrapper {
+              padding: 18px 14px 18px;
+              border-radius: 16px;
+            }
+            h1 {
+              font-size: 20px;
+            }
+            table {
+              font-size: 12px;
+            }
+            th, td {
+              padding: 6px 6px;
+            }
           }
         </style>
       </head>
       <body>
-        <div class="wrapper">
-          <div class="top-bar">
-            <h1>Admin Dashboard</h1>
-            <form id="logoutForm" method="post" action="/admin/logout">
-              <button type="submit">Logout</button>
-            </form>
+        <div class="page-shell">
+          <div class="wrapper">
+            <div class="wrapper-inner">
+              <div class="top-bar">
+                <div class="header-left">
+                  <h1>Admin Dashboard</h1>
+                  <p class="tagline">Monitor User & API Key Jackpot</p>
+                </div>
+                <form id="logoutForm" method="post" action="/admin/logout">
+                  <button type="submit" class="btn btn-logout">Logout</button>
+                </form>
+              </div>
+
+              <h2>Daftar User</h2>
+              <div class="section-divider"></div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${userRows || '<tr><td colspan="4" class="empty-row">Belum ada user.</td></tr>'}
+                </tbody>
+              </table>
+
+              <h2>Daftar API Key & Status</h2>
+              <div class="section-divider"></div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>API Key</th>
+                    <th>User ID</th>
+                    <th>is_active</th>
+                    <th>created_at</th>
+                    <th>last_used_at</th>
+                    <th>out_of_date</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${keyRows || '<tr><td colspan="9" class="empty-row">Belum ada API key.</td></tr>'}
+                </tbody>
+              </table>
+            </div>
           </div>
-
-          <h2>Daftar User</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${userRows || '<tr><td colspan="4">Belum ada user.</td></tr>'}
-            </tbody>
-          </table>
-
-          <h2>Daftar API Key & Status</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>API Key</th>
-                <th>User ID</th>
-                <th>is_active</th>
-                <th>created_at</th>
-                <th>last_used_at</th>
-                <th>out_of_date</th>
-                <th>Status</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${keyRows || '<tr><td colspan="9">Belum ada API key.</td></tr>'}
-            </tbody>
-          </table>
         </div>
 
         <script>

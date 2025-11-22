@@ -5,89 +5,215 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pembuat API Key</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #ffe6f0;
-      color: #4a4a4a;
+      font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background:
+        radial-gradient(circle at top, #5a0008, transparent 60%),
+        radial-gradient(circle at bottom, #1a0004, transparent 60%),
+        #0a0002;
+      color: #fce4ec;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
+      padding: 16px;
     }
 
     .container {
-      background-color: #fff0f6;
-      border-radius: 20px;
-      box-shadow: 0 4px 10px rgba(255, 0, 128, 0.2);
-      padding: 30px;
-      width: 380px;
+      background:
+        radial-gradient(circle at top left, rgba(255, 82, 82, 0.25), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(255, 214, 0, 0.2), transparent 55%),
+        #230007;
+      border-radius: 22px;
+      box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.95),
+        0 0 30px rgba(255, 82, 82, 0.7);
+      padding: 26px 24px 20px;
+      width: 390px;
       text-align: center;
+      border: 1px solid #c62828;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -10%;
+      width: 120%;
+      height: 30px;
+      background-image: repeating-linear-gradient(
+        90deg,
+        #ffeb3b 0 18px,
+        #f44336 18px 36px
+      );
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.9);
+    }
+
+    .container::after {
+      content: 'API KEY JACKPOT';
+      position: absolute;
+      top: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: #ffeb3b;
+      text-shadow: 0 1px 3px #000;
+      opacity: 0.95;
     }
 
     h1 {
-      color: #ff4081;
-      margin-bottom: 20px;
+      color: #ff5252;
+      margin-top: 56px;
+      margin-bottom: 4px;
+      font-size: 22px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-shadow:
+        0 0 6px rgba(255, 82, 82, 0.9),
+        0 0 16px rgba(255, 214, 0, 0.8);
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: #ffe082;
+      margin-bottom: 16px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
     }
 
     button {
-      background-color: #ff4081;
-      color: white;
+      background-image: linear-gradient(90deg, #ff7043, #ffca28, #f50057);
+      background-size: 200% 200%;
+      color: #1a0004;
       border: none;
-      border-radius: 12px;
-      padding: 10px 20px;
-      font-size: 16px;
+      border-radius: 999px;
+      padding: 9px 20px;
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition:
+        background-position 0.25s ease,
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
       margin: 5px;
+      box-shadow:
+        0 7px 16px rgba(0, 0, 0, 0.95),
+        0 0 16px rgba(255, 202, 40, 0.9);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
     }
 
     button:hover {
-      background-color: #ff6699;
+      background-position: 100% 0;
+      transform: translateY(-1px);
+      box-shadow:
+        0 10px 20px rgba(0, 0, 0, 1),
+        0 0 20px rgba(255, 234, 0, 0.9);
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow:
+        0 5px 12px rgba(0, 0, 0, 0.95),
+        0 0 12px rgba(255, 193, 7, 0.9);
     }
 
     .textarea-container {
       position: relative;
-      margin-top: 20px;
+      margin-top: 18px;
     }
 
     textarea {
       width: 100%;
       height: 120px;
-      border: 2px solid #ff80ab;
-      border-radius: 10px;
+      border: 1px solid #ad1457;
+      border-radius: 14px;
       padding: 10px;
-      font-size: 14px;
+      font-size: 13px;
       resize: none;
-      background-color: #fff;
-      color: #333;
+      background-color: rgba(12, 0, 4, 0.9);
+      color: #ffebee;
       box-sizing: border-box;
+      outline: none;
+      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.9);
+    }
+
+    textarea::placeholder {
+      color: #b0bec5;
+    }
+
+    textarea:focus {
+      border-color: #ff4081;
+      box-shadow:
+        inset 0 0 10px rgba(0, 0, 0, 0.95),
+        0 0 12px rgba(255, 64, 129, 0.8);
+      background-color: #120009;
     }
 
     .copy-btn {
       position: absolute;
-      bottom: 8px;
-      right: 8px;
-      background-color: #ff80ab;
-      color: white;
+      bottom: 10px;
+      right: 10px;
+      background-color: #ffb300;
+      border-radius: 999px;
       border: none;
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 12px;
+      padding: 6px 14px;
+      font-size: 11px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
-      opacity: 0.9;
+      transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.1s ease;
+      color: #1a0004;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.95),
+        0 0 10px rgba(255, 235, 59, 0.9);
     }
 
     .copy-btn:hover {
-      background-color: #ff6699;
-      opacity: 1;
+      background-color: #ffc400;
+      transform: translateY(-1px);
+    }
+
+    .copy-btn:active {
+      transform: translateY(1px) scale(0.98);
     }
 
     #status {
       margin-top: 15px;
       font-weight: 500;
-      color: #ff4081;
+      font-size: 13px;
+      color: #ffccbc;
+      min-height: 18px;
+      text-shadow: 0 0 6px rgba(0,0,0,0.9);
+    }
+
+    .section-title {
+      margin-top: 22px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffe082;
+      border-top: 1px dashed #b71c1c;
+      padding-top: 10px;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .disabled-hint {
+      font-size: 11px;
+      color: #f8bbd0;
+      margin-top: 4px;
+      text-align: left;
     }
 
     .form-group {
@@ -97,40 +223,45 @@
 
     .form-group label {
       display: block;
-      font-size: 13px;
+      font-size: 12px;
       margin-bottom: 4px;
-      color: #ff4081;
+      color: #ffebee;
       font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
     .form-group input {
       width: 100%;
       padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #ff80ab;
+      border-radius: 999px;
+      border: 1px solid #ad1457;
       box-sizing: border-box;
-      font-size: 14px;
+      font-size: 13px;
+      background-color: rgba(12, 0, 4, 0.9);
+      color: #fce4ec;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
-    .section-title {
-      margin-top: 20px;
-      font-size: 15px;
-      font-weight: 600;
-      color: #ff4081;
-      border-top: 1px dashed #ff80ab;
-      padding-top: 12px;
+    .form-group input::placeholder {
+      color: #b0bec5;
     }
 
-    .disabled-hint {
-      font-size: 12px;
-      color: #999;
-      margin-top: 4px;
+    .form-group input:focus {
+      border-color: #ff80ab;
+      box-shadow:
+        0 0 0 1px rgba(255, 128, 171, 0.7),
+        0 0 12px rgba(255, 82, 82, 0.8);
+      background-color: #18000b;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Buat API Key</h1>
+    <div class="subtitle"></div>
+
     <button id="btnCreate">Create API Key</button>
     <button id="btnCheck">Cek API Key</button>
 
@@ -190,13 +321,13 @@
         const data = await response.json();
         apiKeyTextarea.value = data.apiKey;
         statusEl.textContent = 'API Key berhasil dibuat!';
-        statusEl.style.color = '#ff4081';
+        statusEl.style.color = '#b9f6ca';
 
-        // enable form user setelah api key dibuat
         setUserFormEnabled(true);
       } catch (err) {
         apiKeyTextarea.value = 'Error: ' + err.message;
         statusEl.textContent = '';
+        statusEl.style.color = '#ff8a80';
         setUserFormEnabled(false);
       }
     });
@@ -229,18 +360,17 @@
 
         if (data.valid) {
           statusEl.textContent = '✅ API Key valid dan terdaftar di database!';
-          statusEl.style.color = 'green';
+          statusEl.style.color = '#b9f6ca';
         } else {
           statusEl.textContent = '❌ API Key tidak valid: ' + (data.error || '');
-          statusEl.style.color = 'red';
+          statusEl.style.color = '#ff8a80';
         }
       } catch (err) {
         statusEl.textContent = 'Error: ' + err.message;
-        statusEl.style.color = 'red';
+        statusEl.style.color = '#ff8a80';
       }
     });
 
-    // tombol simpan user
     btnSaveUser.addEventListener('click', async () => {
       const apiKey = apiKeyTextarea.value.trim();
       const first_name = firstNameInput.value.trim();
@@ -271,17 +401,15 @@
         }
 
         statusEl.textContent = 'Data user dan API key berhasil disimpan.';
-        statusEl.style.color = 'green';
+        statusEl.style.color = '#b9f6ca';
 
-        // optional: disable lagi supaya user nggak spam
         setUserFormEnabled(false);
       } catch (err) {
         statusEl.textContent = 'Error: ' + err.message;
-        statusEl.style.color = 'red';
+        statusEl.style.color = '#ff8a80';
       }
     });
 
-    // pastikan form disabled di awal
     setUserFormEnabled(false);
   </script>
 </body>
