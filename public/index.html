@@ -21,7 +21,7 @@
       border-radius: 20px;
       box-shadow: 0 4px 10px rgba(255, 0, 128, 0.2);
       padding: 30px;
-      width: 350px;
+      width: 380px;
       text-align: center;
     }
 
@@ -89,6 +89,43 @@
       font-weight: 500;
       color: #ff4081;
     }
+
+    .form-group {
+      text-align: left;
+      margin-top: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #ff4081;
+      font-weight: 600;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #ff80ab;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    .section-title {
+      margin-top: 20px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #ff4081;
+      border-top: 1px dashed #ff80ab;
+      padding-top: 12px;
+    }
+
+    .disabled-hint {
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -102,26 +139,70 @@
       <button class="copy-btn" id="btnCopy">Copy</button>
     </div>
 
+    <div class="section-title">Data User Pemilik API Key</div>
+    <div class="disabled-hint" id="userFormHint">
+      Buat API key dulu, baru form ini bisa diisi.
+    </div>
+
+    <div id="userForm">
+      <div class="form-group">
+        <label for="first_name">First Name</label>
+        <input id="first_name" type="text" placeholder="Masukkan first name" disabled />
+      </div>
+      <div class="form-group">
+        <label for="last_name">Last Name</label>
+        <input id="last_name" type="text" placeholder="Masukkan last name" disabled />
+      </div>
+      <div class="form-group">
+        <label for="email_address">Email</label>
+        <input id="email_address" type="email" placeholder="Masukkan email" disabled />
+      </div>
+      <button id="btnSaveUser" disabled>Simpan User</button>
+    </div>
+
     <div id="status"></div>
   </div>
 
   <script>
+    const apiKeyTextarea = document.getElementById('apikey');
+    const statusEl = document.getElementById('status');
+
+    const firstNameInput = document.getElementById('first_name');
+    const lastNameInput = document.getElementById('last_name');
+    const emailInput = document.getElementById('email_address');
+    const btnSaveUser = document.getElementById('btnSaveUser');
+    const userFormHint = document.getElementById('userFormHint');
+
+    function setUserFormEnabled(enabled) {
+      firstNameInput.disabled = !enabled;
+      lastNameInput.disabled = !enabled;
+      emailInput.disabled = !enabled;
+      btnSaveUser.disabled = !enabled;
+      userFormHint.textContent = enabled
+        ? 'Isi data user lalu klik "Simpan User".'
+        : 'Buat API key dulu, baru form ini bisa diisi.';
+    }
+
     document.getElementById('btnCreate').addEventListener('click', async () => {
       try {
-        const response = await fetch('http://localhost:3000/create', { method: 'POST' });
+        const response = await fetch('/create', { method: 'POST' });
         if (!response.ok) throw new Error('Gagal mengakses server!');
         const data = await response.json();
-        document.getElementById('apikey').value = data.apiKey;
-        document.getElementById('status').textContent = 'API Key berhasil dibuat dan disimpan di database!';
+        apiKeyTextarea.value = data.apiKey;
+        statusEl.textContent = 'API Key berhasil dibuat!';
+        statusEl.style.color = '#ff4081';
+
+        // enable form user setelah api key dibuat
+        setUserFormEnabled(true);
       } catch (err) {
-        document.getElementById('apikey').value = 'Error: ' + err.message;
-        document.getElementById('status').textContent = '';
+        apiKeyTextarea.value = 'Error: ' + err.message;
+        statusEl.textContent = '';
+        setUserFormEnabled(false);
       }
     });
 
     document.getElementById('btnCopy').addEventListener('click', async () => {
-      const textarea = document.getElementById('apikey');
-      const apiKey = textarea.value.trim();
+      const apiKey = apiKeyTextarea.value.trim();
       if (!apiKey) return alert('Belum ada API key untuk disalin!');
       try {
         await navigator.clipboard.writeText(apiKey);
@@ -134,31 +215,74 @@
     });
 
     document.getElementById('btnCheck').addEventListener('click', async () => {
-      const apiKey = document.getElementById('apikey').value.trim();
+      const apiKey = apiKeyTextarea.value.trim();
       if (!apiKey) return alert('Isi dulu API Key yang mau dicek!');
 
       try {
-        const res = await fetch('http://localhost:3000/cekapi', {
+        const res = await fetch('/cekapi', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ apiKey })
         });
 
         const data = await res.json();
-        const status = document.getElementById('status');
 
         if (data.valid) {
-          status.textContent = '✅ API Key valid dan terdaftar di database!';
-          status.style.color = 'green';
+          statusEl.textContent = '✅ API Key valid dan terdaftar di database!';
+          statusEl.style.color = 'green';
         } else {
-          status.textContent = '❌ API Key tidak valid: ' + (data.error || '');
-          status.style.color = 'red';
+          statusEl.textContent = '❌ API Key tidak valid: ' + (data.error || '');
+          statusEl.style.color = 'red';
         }
       } catch (err) {
-        document.getElementById('status').textContent = 'Error: ' + err.message;
-        document.getElementById('status').style.color = 'red';
+        statusEl.textContent = 'Error: ' + err.message;
+        statusEl.style.color = 'red';
       }
     });
+
+    // tombol simpan user
+    btnSaveUser.addEventListener('click', async () => {
+      const apiKey = apiKeyTextarea.value.trim();
+      const first_name = firstNameInput.value.trim();
+      const last_name = lastNameInput.value.trim();
+      const email_address = emailInput.value.trim();
+
+      if (!apiKey) {
+        alert('Buat API key dulu sebelum menyimpan user.');
+        return;
+      }
+
+      if (!first_name || !last_name || !email_address) {
+        alert('Semua field user wajib diisi.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ first_name, last_name, email_address, apiKey })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Gagal menyimpan user');
+        }
+
+        statusEl.textContent = 'Data user dan API key berhasil disimpan.';
+        statusEl.style.color = 'green';
+
+        // optional: disable lagi supaya user nggak spam
+        setUserFormEnabled(false);
+      } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        statusEl.style.color = 'red';
+      }
+    });
+
+    // pastikan form disabled di awal
+    setUserFormEnabled(false);
   </script>
 </body>
 </html>
